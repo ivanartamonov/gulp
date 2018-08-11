@@ -17,11 +17,11 @@ gulp.task('rm', function () {
 
 // Собираем стили
 gulp.task('sass', ['csslibs'], function(){
-    return gulp.src('app/scss/**/*.sass')
+    return gulp.src('app/scss/**/*.scss')
         .pipe(sass())
         .pipe(cssnano())
         .pipe(rename({suffix: '.min'}))
-        .pipe(gulp.dest('dist/css/'));
+        .pipe(gulp.dest('./dist/css/'));
 });
 
 // Компилируем CSS разных библиотек в один файл и сжимаем его
@@ -31,7 +31,7 @@ gulp.task('csslibs', function(){
         ])
         .pipe(concat('libs.min.css'))
         .pipe(cssnano())
-        .pipe(gulp.dest('dist/css/'))
+        .pipe(gulp.dest('./dist/css/'))
 });
 
 // Собираем JS
@@ -55,7 +55,7 @@ gulp.task('browser-sync', function(){
 });
 
 gulp.task('default', ['rm', 'browser-sync', 'sass', 'scripts'], function(){
-    gulp.watch('app/scss/**/*.sass', ['sass']);
+    gulp.watch('app/scss/**/*.scss', ['sass']);
     gulp.watch('*.html', browserSync.reload);
     gulp.watch('app/js/**/*.js', browserSync.reload);
 });
