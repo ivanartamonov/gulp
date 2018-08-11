@@ -27,7 +27,8 @@ gulp.task('sass', ['csslibs'], function(){
 // Компилируем CSS разных библиотек в один файл и сжимаем его
 gulp.task('csslibs', function(){
     return gulp.src([
-            'app/libs/bootstrap4/dist/css/bootstrap.min.css'
+            'app/libs/bootstrap4/dist/css/bootstrap.min.css',
+            'app/libs/animate.css/animate.min.css'
         ])
         .pipe(concat('libs.min.css'))
         .pipe(cssnano())
