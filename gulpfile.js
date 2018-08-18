@@ -4,8 +4,12 @@ var gulp            = require('gulp'),
     uglifyjs        = require('gulp-uglifyjs'),
     cssnano         = require('gulp-cssnano'),
     rename          = require('gulp-rename'),
-    //autoPrefixer    = require('gulp-autoprefixer'),
+    autoPrefixer    = require('gulp-autoprefixer'),
+    runSequence     = require('run-sequence'),
     rm              = require('gulp-rimraf'),
+    cache           = require('gulp-cache'),
+    imagemin        = require('gulp-imagemin'),
+    pngquant        = require('imagemin-pngquant'),
     browserSync     = require('browser-sync');
 
 
@@ -15,10 +19,15 @@ gulp.task('rm', function () {
         .pipe(rm());
 });
 
+gulp.task('flush-cache', function(){
+    return cache.clearAll();
+});
+
 // Собираем стили
 gulp.task('sass', ['csslibs'], function(){
     return gulp.src('app/scss/**/*.scss')
         .pipe(sass())
+        .pipe(autoPrefixer(['last 15 versions', '> 1%', 'ie 8', 'ie 7'], {cascade: true}))
         .pipe(cssnano())
         .pipe(rename({suffix: '.min'}))
         .pipe(gulp.dest('./dist/css/'));
@@ -43,20 +52,36 @@ gulp.task('scripts', function(){
         ])
         .pipe(concat('libs.min.js'))
         .pipe(uglifyjs())
-        .pipe(gulp.dest('dist/js'))
+        .pipe(gulp.dest('dist/js'));
+});
+
+gulp.task('img', function(){
+    return gulp.src('app/img/**/*')
+        .pipe(cache(imagemin({
+            interlaced: true,
+            progressive: true,
+            use: [pngquant()]
+        })))
+        .pipe(gulp.dest('dist/img'));
 });
 
 gulp.task('browser-sync', function(){
     browserSync({
-        server: {
-            baseDir: 'app'
-        },
-        notify: false
+        server: 'dist'
     });
 });
 
-gulp.task('default', ['rm', 'browser-sync', 'sass', 'scripts'], function(){
+// билдим все
+gulp.task('build', ['sass', 'scripts', 'img']);
+
+// watch
+gulp.task('watch', function () {
     gulp.watch('app/scss/**/*.scss', ['sass']);
-    gulp.watch('*.html', browserSync.reload);
-    gulp.watch('app/js/**/*.js', browserSync.reload);
+    gulp.watch('app/js/**/*.js', ['scripts']);
+    gulp.watch('app/img/*', ['img']);
+});
+
+// default
+gulp.task('default', function (callback) {
+    runSequence('rm', 'build', 'browser-sync', 'watch', callback);
 });
